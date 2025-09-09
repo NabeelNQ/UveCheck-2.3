@@ -1,0 +1,5 @@
+{
+  "name": "UveCheck V2.3",
+  "description": "An application to predict the risk of uveitis in children based on various international medical guidelines. Users can select a guideline, answer a series of questions, and receive a risk assessment.",
+  "requestFramePermissions": []
+}
