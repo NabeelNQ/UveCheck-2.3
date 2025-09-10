@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Calendar from './Calendar';
 
@@ -7,6 +6,8 @@ interface DateInputProps {
     value: string; // YYYY-MM-DD
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     id: string;
+    minDate?: string; // YYYY-MM-DD
+    error?: string | null;
 }
 
 // Converts a YYYY-MM-DD string to a DD/MM/YYYY string for display
@@ -24,7 +25,7 @@ const formatToYYYYMMDD = (date: Date) => {
     return `${year}-${month}-${day}`;
 };
 
-const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => {
+const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id, minDate, error }) => {
     const [isCalendarOpen, setCalendarOpen] = useState(false);
     const [displayValue, setDisplayValue] = useState(formatDateForDisplay(value));
 
@@ -40,7 +41,6 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
     };
 
     const handleDateSelect = (date: Date) => {
-        // This date is already in the correct local timezone
         const formattedDate = formatToYYYYMMDD(date);
         handleChangeEvent(formattedDate);
         setCalendarOpen(false);
@@ -58,7 +58,6 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
             const year = parseInt(parts[3], 10);
 
             if (month > 0 && month <= 12 && day > 0 && day <= 31) {
-                // Create date in local timezone
                 const date = new Date(year, month - 1, day);
                 if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
                     const formattedDate = formatToYYYYMMDD(date);
@@ -69,6 +68,10 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
         }
         setDisplayValue(formatDateForDisplay(value));
     };
+
+    const inputClasses = `w-full pl-3 pr-10 py-2.5 bg-slate-50 border rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent ${
+        error ? 'border-red-500 ring-red-500' : 'border-slate-200 focus:ring-slate-400'
+    }`;
 
     return (
         <div>
@@ -82,7 +85,7 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
                     value={displayValue}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                    className={inputClasses}
                     placeholder="dd/mm/yyyy"
                 />
                 <button type="button" onClick={() => setCalendarOpen(true)} className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -94,6 +97,7 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
                 onClose={() => setCalendarOpen(false)}
                 onSelectDate={handleDateSelect}
                 value={value}
+                minDate={minDate}
             />
         </div>
     );

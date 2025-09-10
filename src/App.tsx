@@ -7,7 +7,7 @@ import ResultsPage from './components/ResultsPage';
 const App: React.FC = () => {
     const {
         currentStep,
-        selectedGuideline,
+        selectedCountry,
         formData,
         result,
         handleStart,
@@ -35,7 +35,7 @@ const App: React.FC = () => {
                 return (
                     <UveCheckForm
                         guideline={guidelineDetails}
-                        selectedGuideline={selectedGuideline}
+                        selectedCountry={selectedCountry}
                         formData={formData}
                         onGuidelineChange={handleGuidelineChange}
                         onFormChange={handleFormChange}

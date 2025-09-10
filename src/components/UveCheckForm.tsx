@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormData, GuidelineDetails, Guideline } from '../types';
 import DateInput from './ui/DateInput';
 import SelectInput from './ui/SelectInput';
@@ -20,34 +20,54 @@ const guidelines = [
     { name: 'US', id: Guideline.US_PAKISTAN },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
+
 interface UveCheckFormProps {
     guideline: GuidelineDetails | null;
-    selectedGuideline: Guideline | null;
+    selectedCountry: string;
     formData: FormData;
-    onGuidelineChange: (guideline: Guideline | null) => void;
+    onGuidelineChange: (selection: { country: string; guideline: Guideline } | null) => void;
     onFormChange: (field: keyof FormData, value: string) => void;
     onSubmit: () => void;
 }
 
-const UveCheckForm: React.FC<UveCheckFormProps> = ({ guideline, selectedGuideline, formData, onGuidelineChange, onFormChange, onSubmit }) => {
-    const isFormValid = guideline ? guideline.questions.every(q => {
+const UveCheckForm: React.FC<UveCheckFormProps> = ({ guideline, selectedCountry, formData, onGuidelineChange, onFormChange, onSubmit }) => {
+    const [dateError, setDateError] = useState<string | null>(null);
+    
+    useEffect(() => {
+        if (formData.birthDate && formData.diagDate) {
+            const birth = new Date(formData.birthDate);
+            const diag = new Date(formData.diagDate);
+            if (diag < birth) {
+                setDateError("Diagnosis date cannot be before birth date.");
+            } else {
+                setDateError(null);
+            }
+        } else {
+            setDateError(null);
+        }
+    }, [formData.birthDate, formData.diagDate]);
+
+    const isFormValid = guideline && !dateError ? guideline.questions.every(q => {
         const value = formData[q.key];
-        // For radio buttons, '' is a valid initial state but not a valid final answer.
-        // For other inputs, we just check for presence.
         return value !== '' && value !== null && value !== undefined;
     }) : false;
 
     const renderQuestion = (q: Question) => {
+        const isDiagDate = q.key === 'diagDate';
         switch (q.type) {
             case 'date':
                 return (
-                    <DateInput
-                        key={q.key}
-                        id={q.key}
-                        label={q.label}
-                        value={formData[q.key] as string}
-                        onChange={(e) => onFormChange(q.key, e.target.value)}
-                    />
+                    <div key={q.key}>
+                        <DateInput
+                            id={q.key}
+                            label={q.label}
+                            value={formData[q.key] as string}
+                            onChange={(e) => onFormChange(q.key, e.target.value)}
+                            minDate={isDiagDate ? formData.birthDate : undefined}
+                            error={isDiagDate ? dateError : null}
+                        />
+                        {isDiagDate && dateError && <p className="text-red-600 text-xs mt-1">{dateError}</p>}
+                    </div>
                 );
             case 'select':
                 return (
@@ -76,7 +96,19 @@ const UveCheckForm: React.FC<UveCheckFormProps> = ({ guideline, selectedGuidelin
         }
     };
     
-    const guidelineOptions = [{ value: '', label: 'Select an option' }, ...guidelines.map(g => ({ value: g.id, label: g.name }))];
+    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const countryName = e.target.value;
+        if (!countryName) {
+            onGuidelineChange(null);
+            return;
+        }
+        const selected = guidelines.find(g => g.name === countryName);
+        if (selected) {
+            onGuidelineChange({ country: selected.name, guideline: selected.id });
+        }
+    };
+
+    const guidelineOptions = [{ value: '', label: 'Select an option' }, ...guidelines.map(g => ({ value: g.name, label: g.name }))];
 
     const dateQuestions = guideline?.questions.filter(q => q.key === 'birthDate' || q.key === 'diagDate') || [];
     const otherQuestions = guideline?.questions.filter(q => q.key !== 'birthDate' && q.key !== 'diagDate') || [];
@@ -88,8 +120,8 @@ const UveCheckForm: React.FC<UveCheckFormProps> = ({ guideline, selectedGuidelin
                 <SelectInput
                     id="guideline-selector"
                     label="Select Algorithm"
-                    value={selectedGuideline || ''}
-                    onChange={(e) => onGuidelineChange(e.target.value as Guideline || null)}
+                    value={selectedCountry}
+                    onChange={handleSelectChange}
                     options={guidelineOptions}
                 />
             

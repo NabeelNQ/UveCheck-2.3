@@ -30,6 +30,7 @@ type Step = 'intro' | 'form' | 'results';
 export const useUveCheck = () => {
     const [currentStep, setCurrentStep] = useState<Step>('intro');
     const [selectedGuideline, setSelectedGuideline] = useState<Guideline | null>(null);
+    const [selectedCountry, setSelectedCountry] = useState<string>('');
     const [formData, setFormData] = useState<FormData>(initialFormData);
     const [result, setResult] = useState<Result | null>(null);
 
@@ -37,12 +38,12 @@ export const useUveCheck = () => {
         setCurrentStep('form');
     }, []);
 
-    const handleGuidelineChange = useCallback((guideline: Guideline | null) => {
-        setSelectedGuideline(guideline);
-        
-        if (guideline) {
-            const questions = GUIDELINE_QUESTIONS[guideline];
-            // Set defaults for select inputs to avoid invalid states
+    const handleGuidelineChange = useCallback((selection: { country: string; guideline: Guideline } | null) => {
+        if (selection) {
+            setSelectedGuideline(selection.guideline);
+            setSelectedCountry(selection.country);
+            
+            const questions = GUIDELINE_QUESTIONS[selection.guideline];
             const subDiagnosisQuestion = questions.find(q => q.key === 'subDiagnosis');
             const biologicQuestion = questions.find(q => q.key === 'biologicTreatment');
             
@@ -52,7 +53,9 @@ export const useUveCheck = () => {
                 biologicTreatment: biologicQuestion?.options?.[0] || '',
             });
         } else {
-             setFormData(initialFormData);
+            setSelectedGuideline(null);
+            setSelectedCountry('');
+            setFormData(initialFormData);
         }
     }, []);
 
@@ -71,6 +74,7 @@ export const useUveCheck = () => {
     const handleReset = useCallback(() => {
         setCurrentStep('intro');
         setSelectedGuideline(null);
+        setSelectedCountry('');
         setFormData(initialFormData);
         setResult(null);
     }, []);
@@ -84,6 +88,7 @@ export const useUveCheck = () => {
     return {
         currentStep,
         selectedGuideline,
+        selectedCountry,
         formData,
         result,
         handleStart,
