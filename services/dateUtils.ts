@@ -1,8 +1,16 @@
-
 // All functions expect date strings in 'YYYY-MM-DD' format.
 
+/**
+ * Parses a 'YYYY-MM-DD' string into a Date object in the user's local timezone.
+ * This approach avoids UTC conversion issues that can cause off-by-one-day errors.
+ * @param dateStr The date string to parse.
+ * @returns A Date object.
+ */
 export const parseDate = (dateStr: string): Date => {
-    return new Date(dateStr);
+    if (!dateStr) return new Date(NaN); // Return invalid date for empty string
+    const [year, month, day] = dateStr.split('-').map(Number);
+    // new Date(year, monthIndex, day) creates a date in the local timezone.
+    return new Date(year, month - 1, day);
 };
 
 export const yearsBetween = (earlyDateStr: string, lateDateStr: string): number => {
@@ -23,8 +31,9 @@ export const yearsBetween = (earlyDateStr: string, lateDateStr: string): number 
 
 export const yearsToToday = (dateStr: string): number => {
     if (!dateStr) return 0;
-    const today = new Date().toISOString().split('T')[0];
-    return yearsBetween(dateStr, today);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return yearsBetween(dateStr, todayStr);
 };
 
 export const yearsToTodayFloat = (dateStr: string): number => {
@@ -54,8 +63,9 @@ export const monthsBetween = (earlyDateStr: string, lateDateStr: string): number
 
 export const monthsToToday = (dateStr: string): number => {
     if (!dateStr) return 0;
-    const today = new Date().toISOString().split('T')[0];
-    return monthsBetween(dateStr, today);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return monthsBetween(dateStr, todayStr);
 };
 
 export const formatDateForDisplay = (dateString: string): string => {
