@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Calendar from './Calendar';
 
@@ -8,32 +9,40 @@ interface DateInputProps {
     id: string;
 }
 
+// Converts a YYYY-MM-DD string to a DD/MM/YYYY string for display
 const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return '';
     const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
 };
 
+// Converts a local Date object to a YYYY-MM-DD string
+const formatToYYYYMMDD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => {
     const [isCalendarOpen, setCalendarOpen] = useState(false);
     const [displayValue, setDisplayValue] = useState(formatDateForDisplay(value));
 
-    // Sync display value when the prop changes (e.g., from calendar selection or form reset)
     useEffect(() => {
         setDisplayValue(formatDateForDisplay(value));
     }, [value]);
 
-    const handleDateSelect = (date: Date) => {
-        // Format to YYYY-MM-DD for consistency with input[type=date]
-        const formattedDate = date.toISOString().split('T')[0];
+    const handleChangeEvent = (dateString: string) => {
         const event = {
-            target: {
-                id,
-                value: formattedDate,
-                name: id,
-            },
+            target: { id, value: dateString, name: id },
         } as unknown as React.ChangeEvent<HTMLInputElement>;
         onChange(event);
+    };
+
+    const handleDateSelect = (date: Date) => {
+        // This date is already in the correct local timezone
+        const formattedDate = formatToYYYYMMDD(date);
+        handleChangeEvent(formattedDate);
         setCalendarOpen(false);
     };
     
@@ -49,17 +58,15 @@ const DateInput: React.FC<DateInputProps> = ({ label, value, onChange, id }) => 
             const year = parseInt(parts[3], 10);
 
             if (month > 0 && month <= 12 && day > 0 && day <= 31) {
+                // Create date in local timezone
                 const date = new Date(year, month - 1, day);
-                // Final check to prevent invalid dates like 31/02/2023
                 if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
-                    const formattedDate = date.toISOString().split('T')[0];
-                    const event = { target: { id, value: formattedDate, name: id } } as unknown as React.ChangeEvent<HTMLInputElement>;
-                    onChange(event);
+                    const formattedDate = formatToYYYYMMDD(date);
+                    handleChangeEvent(formattedDate);
                     return;
                 }
             }
         }
-        // If input is invalid, revert to the last valid value from props
         setDisplayValue(formatDateForDisplay(value));
     };
 
