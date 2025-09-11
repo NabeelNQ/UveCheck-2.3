@@ -58,7 +58,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onNext }) => {
                 </ul>
             </div>
 
-            <p className="font-semibold">Stay informed. Stay proactive. Strengthen uveitis care with UveCheck.</p>
+            <p className="font-semibold">Stay informed. Stay proactive. Strengthen uveitis care with UveCheck!</p>
 
             <div className="pt-6 text-center">
                 <Button onClick={onNext}>
