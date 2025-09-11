@@ -1,4 +1,3 @@
-
 import { Guideline, FormData, Result } from '../types';
 import { yearsBetween, yearsToToday, yearsToTodayFloat } from './dateUtils';
 
