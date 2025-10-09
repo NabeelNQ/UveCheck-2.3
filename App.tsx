@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { useUveCheck } from './hooks/useUveCheck';
 import IntroPage from './components/IntroPage';
 import UveCheckForm from './components/UveCheckForm';
 import ResultsPage from './components/ResultsPage';
+// ✅ Import Analytics at the top
+import { Analytics } from '@vercel/analytics/react';
 
 const App: React.FC = () => {
     const {
@@ -71,6 +72,8 @@ const App: React.FC = () => {
                     </footer>
                  )}
             </div>
+            {/* ✅ Place Analytics here */}
+            <Analytics />
         </div>
     );
 };
